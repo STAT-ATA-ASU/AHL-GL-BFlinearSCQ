@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Your Name Here">
+
+<title>Fitting Regression Models to Body Fat Data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="LinearModelFittingTutorial_files/libs/clipboard/clipboard.min.js"></script>
+<script src="LinearModelFittingTutorial_files/libs/quarto-html/quarto.js"></script>
+<script src="LinearModelFittingTutorial_files/libs/quarto-html/popper.min.js"></script>
+<script src="LinearModelFittingTutorial_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="LinearModelFittingTutorial_files/libs/quarto-html/anchor.min.js"></script>
+<link href="LinearModelFittingTutorial_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="LinearModelFittingTutorial_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="LinearModelFittingTutorial_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="LinearModelFittingTutorial_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="LinearModelFittingTutorial_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="LinearModelFittingTutorial.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Fitting Regression Models to Body Fat Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Your Name Here </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Last modified on January 09, 2024 15:04:20 Eastern Standard Time</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip no-icon callout-titled" title="Directions">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Directions
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Type complete sentences to answer all questions inside the <code>.callout</code> tags provided in the R Markdown document. Use inline <code>R</code> code to report numeric answers inside the <code>.callout</code> tags (i.e.&nbsp;do not hard code your numeric answers).</p>
+</div>
+</div>
+<p>In the article <em>Fitting Percentage of Body Fat to Simple Body Measurements</em>, <span class="citation" data-cites="johnson_fitting_1996">Johnson (<a href="#ref-johnson_fitting_1996" role="doc-biblioref">1996</a>)</span> uses the data at <a href="http://jse.amstat.org/datasets/fat.dat.txt" class="uri">http://jse.amstat.org/datasets/fat.dat.txt</a> provided to him by Dr.&nbsp;A. Garth Fischer in a personal communication on October 5, 1994, as a multiple linear regression activity with his students. A subset of the variables at <a href="http://jse.amstat.org/datasets/fat.dat.txt" class="uri">http://jse.amstat.org/datasets/fat.dat.txt</a> is available in the R package <strong>mfp</strong> by <span class="citation" data-cites="R-mfp">Ambler and Benner (<a href="#ref-R-mfp" role="doc-biblioref">2022</a>)</span> and the data set is used frequently in the text <em>Statistical Regression and Classification</em> by <span class="citation" data-cites="matloff_statistical_2017">Matloff (<a href="#ref-matloff_statistical_2017" role="doc-biblioref">2017</a>)</span>.</p>
+<p>The purpose of this activity is to have the reader create several regression models to predict the body fat of males. Load a cleaned version of the data available from <a href="https://raw.githubusercontent.com/alanarnholt/MISCD/master/bodyfatClean.csv" class="uri">https://raw.githubusercontent.com/alanarnholt/MISCD/master/bodyfatClean.csv</a> into your <code>R</code> session using the <code>read.csv()</code> function. Use the <code>head()</code> function to view the first six rows of the first eight columns of the data frame <code>bodyfatClean</code>.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled" title="R Code">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>one <span class="ot">&lt;-</span> <span class="st">"https://raw.githubusercontent.com/alanarnholt/MISCD/"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>two <span class="ot">&lt;-</span> <span class="st">"master/bodyfatClean.csv"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="fu">paste0</span>(one, two)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>bodyfatClean <span class="ot">&lt;-</span><span class="fu">read.csv</span>(url)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(bodyfatClean[, <span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>])  <span class="co"># view the first six rows and first 8 columns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  age weight_lbs height_in neck_cm chest_cm abdomen_cm hip_cm thigh_cm
+1  23     154.25     67.75    36.2     93.1       85.2   94.5     59.0
+2  22     173.25     72.25    38.5     93.6       83.0   98.7     58.7
+3  22     154.00     66.25    34.0     95.8       87.9   99.2     59.6
+4  26     184.75     72.25    37.4    101.8       86.4  101.2     60.1
+5  24     184.25     71.25    34.4     97.3      100.0  101.9     63.2
+6  24     210.25     74.75    39.0    104.5       94.4  107.8     66.0</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 1">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>glimpse()</code> function from the <code>dplyr</code> package written by <span class="citation" data-cites="R-dplyr">Wickham et al. (<a href="#ref-R-dplyr" role="doc-biblioref">2023</a>)</span> to view the structure of <code>bodyfatClean</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 1 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 1 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Now that you have seen the structure of the data and have studied the research question, answer the following questions.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 2">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>How many observations and variables are in <code>bodyfatClean</code>? Answer the question programitcally.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 2 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 2 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 3">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the regression setting, the variable that we want to predict is called the response variable. What is the name of the response variable in your case?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 3 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 3 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<hr>
+<p>Type your complete sentence answer here.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 4">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the regression setting, the variable(s) that we use to predict the response variable is(are) called the explanatory or predictor variable(s). How many predictor variable(s) are available to use in this data set?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 4 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 4 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 5">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 5
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>How many of the predictor variables are numerical and how many of them are categorical?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 5 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 5 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<section id="partitioning-the-data" class="level1">
+<h1>Partitioning the Data</h1>
+<p>When building a predictive model with a sufficiently large data set, it is common practice to hold out some fraction (usually less than 50%) of the data as a test set. It is difficult to provide a general rule for the size of the <code>training</code> and <code>testing</code> sets as the ideal split depends on the signal to noise ratio in the data <span class="citation" data-cites="hastie_elements_2009">(<a href="#ref-hastie_elements_2009" role="doc-biblioref">Hastie, Tibshirani, and Friedman 2009</a>)</span>.</p>
+<p>Use the <code>creatDataPartition()</code> function from the <code>caret</code> package to partition the data in to <code>training</code> and <code>testing</code>.</p>
+<p>For illustration purposes, the <code>Boston</code> data set from the <strong>MASS</strong> package written by <span class="citation" data-cites="R-MASS">Ripley (<a href="#ref-R-MASS" role="doc-biblioref">2023</a>)</span> is used to illustrate various steps in predictive model building. The <code>Boston</code> help file indicates the data set consists of 506 observations on 14 different variables for houses in Boston collected in 1978. To open the <code>Boston</code> help file, type <code>?Boston</code> at the R prompt once the <strong>MASS</strong> package has been loaded. The goal is to predict the median house price (<code>medv</code>) in Boston. The <code>Boston</code> data set is divided into a training set containing roughly 80% of the observations and a testing set containing roughly 20% of the observations. Before calling the <code>createDataPartition()</code> function, it is important to set a seed to ensure the data partition is reproducible.</p>
+<p>The arguments <code>y</code>, <code>p</code>, <code>list</code> and <code>times</code> can be used with the <code>createDataPartition()</code> function. These arguments represent a vector of outcomes (<code>Boston$medv</code>), the percentage of data that goes to training (<code>0.80</code>), should the results be in a list (<code>FALSE</code>) and the number of partitions to create (<code>1</code>) respectively. The result from using <code>createDataPartition()</code> is a vector of indices one can use to create the training set.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled" title="R Code">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret) <span class="co"># load the caret package</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MASS)  <span class="co"># load MASS package</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">3178</span>) <span class="co"># set seed for reproducibility</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>trainIndexB <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(<span class="at">y =</span> Boston<span class="sc">$</span>medv,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">p =</span> <span class="fl">0.80</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">list =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">times =</span> <span class="dv">1</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>trainingB <span class="ot">&lt;-</span> Boston[trainIndexB, ]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>testingB <span class="ot">&lt;-</span> Boston[<span class="sc">-</span>trainIndexB, ]</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(trainingB) <span class="co"># Check the dimension of the  training set</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 407  14</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(testingB) <span class="co"># Check the dimension of the testing set</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 99 14</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 6">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 6
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Partition the data frame <code>bodyfatClean</code> into training and testing partitions where roughly 80% of the data is used for training and roughly 20% of the data is used for testing. To ensure reproducibility of the partition, use <code>set.seed(314)</code>. The response variable should be <code>brozek_C</code> (the computed brozek based on the reported density).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 6 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 6 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-15" class="callout-15-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">314</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 7">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 7
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>dim()</code> function to verify the sizes of the <code>training</code> and <code>testing</code> data sets. Report the percentages rounded to two decimal places of the values in <code>bodyfatClean</code> assigned to the <code>training</code> and the <code>testing</code> sets in your text answer.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 7 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 7 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-17" class="callout-17-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+</section>
+<section id="pre-processing-the-data" class="level1">
+<h1>Pre-Processing the Data</h1>
+<p>Some algorithms work better when the predictors are on the same scale. This section considers the <code>preProcess()</code> function for the <strong>caret</strong> package to find potentially helpful transformations of the training predictors. Three different transformations are considered: <code>center</code>, <code>scale</code>, and <code>BoxCox</code>. A center transform computes the mean of a variable and subtracts the computed mean from each value of the variable. A scale transform computes the standard deviation of a variable and divides each value of the variable by the computed standard deviation. Using both a center and a scale transform standardizes a variable. That is, using both center and scale on a variable creates a variable with a mean of 0 and a standard deviation of 1. When all values of a variable are positive, a <code>BoxCox</code> transform will reduce the skew of a variable, making it more Gaussian.</p>
+<p>The following <code>R</code> Code applies a <code>center</code>, <code>scale</code>, and <code>BoxCox</code> transform to all the predictors in <code>trainingB</code> (the training set for the Boston data) and stores the results in <code>pp_trainingB</code>. The computed transformations are applied to both the <code>trainingB</code> and the <code>testingB</code> data sets using the <code>predict()</code> function with the results stored in the objects <code>trainingTransB</code> and <code>testingTransB</code>, respectively. Note that in the Boston data set the response (<code>medv</code>) is the last column (<span class="math inline">\(14^{\text{th}}\)</span>) of the training data frame and is removed before pre-processing with <code>trainingB[ , -14]</code>.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled" title="R Code">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>pp_trainingB <span class="ot">&lt;-</span> <span class="fu">preProcess</span>(trainingB[ , <span class="sc">-</span><span class="dv">14</span>],</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                           <span class="at">method =</span> <span class="fu">c</span>(<span class="st">"center"</span>, <span class="st">"scale"</span>, <span class="st">"BoxCox"</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>pp_trainingB</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Created from 407 samples and 13 variables
+
+Pre-processing:
+  - Box-Cox transformation (11)
+  - centered (13)
+  - ignored (0)
+  - scaled (13)
+
+Lambda estimates for Box-Cox transformation:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  -1.00   -0.15    0.20    0.40    0.90    2.00 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>trainingTransB <span class="ot">&lt;-</span> <span class="fu">predict</span>(pp_trainingB, trainingB)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>testingTransB <span class="ot">&lt;-</span> <span class="fu">predict</span>(pp_trainingB, testingB)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<p>Your turn now to work with the <code>bodyfatClean</code> data frame.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 8">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 8
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Provide the column number of <code>bodyfatClean</code> where <code>brozek_C</code> is stored.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 8 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 8 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comment inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 9">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 9
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>preProcess()</code> function to transform the predictors that are in the <code>training</code> data set created in Problem 6. Specifically, pass a vector with “center”, “scale”, and “BoxCox” to the <code>method =</code> argument of <code>preProcess()</code>. Make sure not to transform the response (<code>brozek_C</code>). Store the results in an object named <code>pp_training</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 9 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-22-contents" aria-controls="callout-22" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 9 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-22" class="callout-22-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 10">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 10
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>predict()</code> function to construct a transformed training set and a transformed testing set. Name the new transformed data sets <code>trainingTrans</code> and <code>testingTrans</code>, respectively.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 10 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-24-contents" aria-controls="callout-24" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 10 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-24" class="callout-24-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="k-fold-cross-validation" class="level1">
+<h1><span class="math inline">\(k\)</span>-Fold Cross Validation</h1>
+<p><span class="math inline">\(k\)</span>-fold cross validation divides the data into <span class="math inline">\(k\)</span> subsets and performs the holdout method <span class="math inline">\(k\)</span> times. Specifically, one of the <span class="math inline">\(k\)</span> subsets is used as the test set and the other <span class="math inline">\(k - 1\)</span> subsets are put together to form a training set. The average MSE across all <span class="math inline">\(k\)</span> trials is computed and is denoted <span class="math inline">\(CV_{(k)}\)</span></p>
+</section>
+<section id="resampling-with-caret" class="level1">
+<h1>Resampling with caret</h1>
+<p>The <code>trainControl()</code> function from <strong>caret</strong> specifies the resampling procedure to be used inside the <code>train()</code> function. Resampling procedures include <span class="math inline">\(k\)</span>-fold cross-validation (once or repeated), leave-one-out cross-validation, and bootstrapping. The following <code>R</code> code creates a <code>myControlB</code> object that will signal a 10-fold repeated five times cross-validation scheme (50 resamples in total) to the <code>train()</code> function for the <code>Boston</code> data set. Note that the argument <code>savePredictions = "final"</code> saves the hold-out predictions for the optimal tuning parameters.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled" title="R Code">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>myControlB <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"repeatedcv"</span>,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">number =</span> <span class="dv">10</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">repeats =</span> <span class="dv">5</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">savePredictions =</span> <span class="st">"final"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 11">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 11
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>trainControl()</code> function to define the resampling method (repeated cross-validation), the number of resampling iterations (10), and the number of repeats or complete sets to generate (5), storing the results in the object <code>myControl</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 11 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-27-contents" aria-controls="callout-27" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 11 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-27" class="callout-27-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the type of resampling</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="building-linear-models" class="level1">
+<h1>Building Linear Models</h1>
+<section id="least-squares-model" class="level2">
+<h2 class="anchored" data-anchor-id="least-squares-model">Least squares model</h2>
+<p>Let’s denote the response variable by <span class="math inline">\(Y\)</span> (always quantitative). <span class="math inline">\(p\)</span> predictor variables will be denoted by <span class="math inline">\(X_1, X_2,\ldots, X_p\)</span> (all quantitative). Some authors refer to the response variable as the dependent variable while the predictor variables are sometimes referred to as independent variables, explanatory variables, features or covariates. The relationship between <span class="math inline">\(Y\)</span> and <span class="math inline">\(X_1, X_2,\ldots, X_p\)</span> will be expressed as</p>
+<p><span id="eq-genModel"><span class="math display">\[
+Y = f(X_1, X_2,\ldots, X_p) + \epsilon.
+\tag{1}\]</span></span></p>
+<p>In <a href="#eq-genModel">Equation&nbsp;1</a> <span class="math inline">\(f\)</span> is some fixed but unknown function of <span class="math inline">\(X_1, X_2,\ldots, X_p\)</span>, and <span class="math inline">\(\epsilon\)</span> is a random error term independent of <span class="math inline">\(X_1, X_2,\ldots, X_p\)</span> with mean zero. For predictive models, the goal is to estimate <span class="math inline">\(f\)</span> with <span class="math inline">\(\hat{f}\)</span> so that <span class="math inline">\(\hat{Y} = \hat{f}(X_1, X_2,\ldots, X_p)\)</span> yields accurate predictions for <span class="math inline">\(Y\)</span>. If one assumes <span class="math inline">\(f\)</span> is linear in <span class="math inline">\(X_1, X_2,\ldots, X_p\)</span>, the model is expressed as the linear model as shown in <a href="#eq-regModel">Equation&nbsp;2</a>.</p>
+<p><span id="eq-regModel"><span class="math display">\[
+Y = f(X) = \beta_0 + \beta_1X_1 + \beta_2X_2 + \cdots + \beta_pX_p + \epsilon
+\tag{2}\]</span></span></p>
+<p>By assuming the functional form of <span class="math inline">\(f\)</span> is linear, the problem becomes one of finding estimates for the parameters <span class="math inline">\(\beta_0, \beta_1, \ldots, \beta_p\)</span> which is generally done with least squares. The least squares estimators are obtained by minimizing the sum of squared residuals (RSS), where</p>
+<p><span id="eq-rss"><span class="math display">\[
+\text{RSS} = \sum_{i=1}^n(y_i-\hat{y}_i)^2,
+\tag{3}\]</span></span></p>
+<p>and <span class="math inline">\(\hat{y}_i = \hat\beta_0 + \hat\beta_1X_1 + \hat\beta_2X_2 + \cdots + \hat\beta_pX_p.\)</span></p>
+<p>To fit a model with a particular algorithm, the name of the algorithm is given to the <code>method</code> argument of the <code>train()</code> function. The <code>train()</code> function accepts a formula interface provided the data is also specified in the function. The following R Code fits a linear model by regressing <code>medv</code> on all of the predictors in the training data set using the dot indicator which selects all predictors <span class="math inline">\((\text{medv} \sim .)\)</span>. The preferred way to train a model is by passing the response vector to the <code>y</code> argument and a data frame of the predictors or a matrix of the predictors to the <code>x</code> argument of <code>train()</code>. Both approaches are shown in the below <code>R</code> code.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled" title="R Code">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Train linear model with  `method = "lm"` </span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># to fit a Least Squares Regression model</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Approach 1</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">31</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>mod_lm <span class="ot">&lt;-</span> <span class="fu">train</span>(medv <span class="sc">~</span> .,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> trainingTransB,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">trControl =</span> myControlB,</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">method =</span> <span class="st">"lm"</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Approach 2</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">31</span>)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>mod_lm2 <span class="ot">&lt;-</span> <span class="fu">train</span>(<span class="at">y =</span> trainingTransB<span class="sc">$</span>medv,    <span class="co"># response</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">x =</span> trainingTransB[, <span class="sc">-</span><span class="dv">14</span>],  <span class="co"># predictors</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl =</span> myControlB,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method =</span> <span class="st">"lm"</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>mod_lm2<span class="sc">$</span>results       <span class="co"># CV results</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  intercept     RMSE  Rsquared      MAE    RMSESD RsquaredSD    MAESD
+1      TRUE 4.513069 0.7653955 3.328636 0.8140112 0.07911475 0.472427</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>mod_lm2<span class="sc">$</span>results<span class="sc">$</span>RMSE  <span class="co"># RMSE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4.513069</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Approach 3</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Should give the same results....but no???</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">31</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>mod_lm3 <span class="ot">&lt;-</span> <span class="fu">train</span>(<span class="at">y =</span> trainingB<span class="sc">$</span>medv,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">x =</span> trainingB[, <span class="sc">-</span><span class="dv">14</span>],</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                 <span class="co"># data = trainingB,</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl =</span> myControlB,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">preProcess =</span> <span class="fu">c</span>(<span class="st">"center"</span>, <span class="st">"scale"</span>, <span class="st">"BoxCox"</span>),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method =</span> <span class="st">"lm"</span>)</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>mod_lm3<span class="sc">$</span>results</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  intercept     RMSE  Rsquared      MAE    RMSESD RsquaredSD     MAESD
+1      TRUE 4.508361 0.7657758 3.327152 0.8079126 0.07917714 0.4632514</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">31</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>mod_lm4 <span class="ot">&lt;-</span> <span class="fu">train</span>(medv <span class="sc">~</span>. ,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data =</span> trainingB,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl =</span> myControlB,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">preProcess =</span> <span class="fu">c</span>(<span class="st">"center"</span>, <span class="st">"scale"</span>, <span class="st">"BoxCox"</span>),</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method =</span> <span class="st">"lm"</span>)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>mod_lm4<span class="sc">$</span>results</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  intercept     RMSE  Rsquared      MAE    RMSESD RsquaredSD     MAESD
+1      TRUE 4.508361 0.7657758 3.327152 0.8079126 0.07917714 0.4632514</code></pre>
+</div>
+</div>
+<hr>
+<p>The average root mean squared error (RMSE) of the 50 resamples is 4.5131 using approach 2.</p>
+<hr>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_lm2)  <span class="co"># summary of lm object</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = .outcome ~ ., data = dat)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-13.3154  -2.6423  -0.2905   2.1241  22.1259 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  22.5897     0.2208 102.325  &lt; 2e-16 ***
+crim          0.7459     0.6103   1.222  0.22236    
+zn            0.3244     0.3195   1.015  0.31055    
+indus        -0.6480     0.4265  -1.519  0.12947    
+chas          0.5081     0.2285   2.224  0.02671 *  
+nox          -2.3616     0.5841  -4.043 6.35e-05 ***
+rm            1.8848     0.3224   5.846 1.06e-08 ***
+age           0.1898     0.4186   0.453  0.65048    
+dis          -3.8574     0.5130  -7.519 3.77e-13 ***
+rad           1.3638     0.4755   2.868  0.00435 ** 
+tax          -1.9369     0.4335  -4.469 1.03e-05 ***
+ptratio      -1.6714     0.2847  -5.871 9.23e-09 ***
+black         0.7120     0.2642   2.694  0.00735 ** 
+lstat        -5.4608     0.4089 -13.356  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.454 on 393 degrees of freedom
+Multiple R-squared:  0.7785,    Adjusted R-squared:  0.7712 
+F-statistic: 106.3 on 13 and 393 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 12">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 12
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>train()</code> function with <code>method = "lm"</code> and assign the object <code>myControl</code> to the <code>trControl</code> argument of the <code>train()</code> function to fit a least squares regression model where the goal is to predict body fat using the pre-processed data in <code>trainingTrans</code> created in Problem 10. Use <code>brozek_C</code> as the response and store the results of <code>train()</code> in <code>mod_lm</code>. Use <code>set.seed(42)</code> for reproducibility. Use <code>mod_lm$results</code> to investigate the model with minimum RMSE. Use the <code>summary()</code> function to view the coefficient estimates of the final model.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 12 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-30-contents" aria-controls="callout-30" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 12 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-30" class="callout-30-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Show cv results</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Summary of mod_lm</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 13">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 13
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>corrplot()</code> function from the <strong>corrplot</strong> package written by <span class="citation" data-cites="R-corrplot">Wei and Simko (<a href="#ref-R-corrplot" role="doc-biblioref">2021</a>)</span> to identify predictors that may be linearly related in <code>trainingTrans</code>. Are any of the variables colinear? If so, remove the predictor that is least correlated to the response variable. Note that when <code>method = "number"</code> is used with <code>corrplot()</code>, color coded numerical correlations are displayed.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 13 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-32-contents" aria-controls="callout-32" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 13 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-32" class="callout-32-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Identifying linearly related predictors</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(corrplot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+</section>
+<section id="forward-selection" class="level2">
+<h2 class="anchored" data-anchor-id="forward-selection">Forward selection</h2>
+<p>Forward selection starts with the null model (a model created from regressing the response on the intercept) then adds predictors one at a time to the model by regressing the response on all of the possible predictors one at a time and adding the predictor that makes the <em>RSS</em> as small as possible or that creates the largest <span class="math inline">\(R^2\)</span>. This process continues until all variables have been added to the model or a criterion such as a p-value greater than some predetermined value (such as 0.20) tells the algorithm to stop adding variables to the model.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 14">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 14
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>train()</code> function with <code>method = "leapForward"</code>, <code>tuneLength = 10</code> and assign the object <code>myControl</code> to the <code>trControl</code> argument of the <code>train()</code> function to fit a forward selection model where the goal is to predict body fat using the pre-processed data <code>trainingTrans</code> from Problem 10. Use <code>brozek_C</code> as the response variable and store the results of <code>train()</code> in <code>mod_FS</code>. Use <code>set.seed(42)</code> for reproducibility. Do not include any predictors that are perfectly correlated.</p>
+<ol type="i">
+<li>Use <code>mod_FS$results</code> to investigate the model that resulted in the minimum RMSE (final submodel).</li>
+<li>Use <code>mod_FS$bestTune</code> to find out how many variable were selected in the final submodel (<code>nvmax</code>).</li>
+<li>Use the <code>summary(mod_FS)</code> function and find the names of the variables selected in the final submodel with minimum RMSE. (Hint: Go to the part the output under <code>Selection Algorithm: forward</code>, then look at the row which agrees with the <code>nvmax</code> from B. The variables with <code>"*"</code>s are the variables selected in the final submodel.) To find the actual coefficients, one can use <code>coef(mod_FS$finalModel, id = mod_FS$bestTune$nvmax)</code>.</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 14 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-34-contents" aria-controls="callout-34" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 14 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-34" class="callout-34-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create Forward Selection model</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code here for part i.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment for part i.</p>
+<hr>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code here for part ii.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment for part ii.</p>
+<hr>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code here for part iii.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment for part iii.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 15">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 15
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Compute the RMSE for <code>mod_FS</code> using the <code>testing</code> data set.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 15 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-36-contents" aria-controls="callout-36" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 15 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-36" class="callout-36-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Computing RMSE on the testing set</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+</section>
+<section id="backward-elimination" class="level2">
+<h2 class="anchored" data-anchor-id="backward-elimination">Backward elimination</h2>
+<p>Backward elimination starts with all predictors in the model (full model) and removes the least significant variables one at a time. The algorithm stops removing variables once a stopping criterion such as p-value less than some predetermined value (such as 0.05) for all predictors in the model is achieved. When the data has more predictors (<span class="math inline">\(p\)</span>) than observations (<span class="math inline">\(n\)</span>), backward elimination is no longer a viable approach since the least squares estimates are not unique. While forward selection is a viable approach when <span class="math inline">\(n &lt; p\)</span>, constrained regression is sometimes a better choice by increasing the bias for a relatively large reduction in variance.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 16">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 16
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>train()</code> function with <code>method = "leapBackward"</code>, <code>tuneLength = 10</code> and assign the object <code>myControl</code> to the <code>trControl</code> argument of the <code>train()</code> function to fit a backward selection model where the goal is to predict body fat. Use <code>brozek_C</code> as the response and store the results of <code>train()</code> in <code>mod_BE</code>. Use <code>set.seed(42)</code> for reproducibility. Do not include any predictors that are perfectly correlated.</p>
+<ol type="i">
+<li>Use <code>mod_BE$results</code> to investigate which model results in the minimum RMSE (final submodel).</li>
+<li>Use <code>mod_BE$bestTune</code> to find out how many variable were selected to the final submodel (<code>nvmax</code>)?</li>
+<li>Use the <code>summary(mod_BE)</code> function and find the names of the variables selected in the final submodel with minimum RMSE. (Hint: Go to the part the output under <code>Selection Algorithm: backward</code>, then look at the row which agrees with the <code>nvmax</code> from B. The variables with <code>"*"</code>s are the variables selected in the final submodel.) To find the actual coefficients, one can use <code>coef(mod_BE$finalModel, id = mod_BE$bestTune$nvmax)</code>.</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 16 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-38-contents" aria-controls="callout-38" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 16 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-38" class="callout-38-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit model with backward elimination</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code here for part i. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment for part i.</p>
+<hr>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code here for part ii. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment for part ii.</p>
+<hr>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code here for part iii. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment for part iii.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 17">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 17
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Compute the RMSE for <code>mod_BE</code> using the <code>testing</code> data set.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 17 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-40-contents" aria-controls="callout-40" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 17 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-40" class="callout-40-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Computing RMSE on the testing set</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+</section>
+<section id="constrained-regression" class="level2">
+<h2 class="anchored" data-anchor-id="constrained-regression">Constrained Regression</h2>
+<p>Constrained regression shrinks the coefficient estimates towards zero while reducing their variance by adding a small amount of bias. Two popular forms of constrained regression are ridge regression developed by <span class="citation" data-cites="hoerl_ridge_1970">Hoerl and Kennard (<a href="#ref-hoerl_ridge_1970" role="doc-biblioref">1970</a>)</span> and the least absolute shrinkage and selection operator (LASSO) developed by <span class="citation" data-cites="tibshirani_regression_1996">Tibshirani (<a href="#ref-tibshirani_regression_1996" role="doc-biblioref">1996</a>)</span>.</p>
+<section id="ridge-regression" class="level3">
+<h3 class="anchored" data-anchor-id="ridge-regression">Ridge Regression</h3>
+<p>The ridge regression coefficient estimates denoted by <span class="math inline">\(\hat{\beta}^R\)</span> are values that minimize</p>
+<p><span id="eq-ridgeE"><span class="math display">\[
+\sum_{i=1}^n(y_i-\hat{y}_i)^2 + \lambda\sum_{j=1}^p\beta^2_j = RSS + \lambda\sum_{j=1}^p\beta^2_j,
+\tag{4}\]</span></span></p>
+<p>where <span class="math inline">\(\lambda \ge 0\)</span> is a tuning parameter. Similar to least squares, ridge regression seeks estimates that make RSS small. However, the quantity <span class="math inline">\(\lambda\sum_{j=1}^p\beta^2_j\)</span> is small when the estimates of the <span class="math inline">\(\beta\)</span>’s are close to zero. That is, the quantity <span class="math inline">\(\lambda\sum_{j=1}^p\beta^2_j\)</span> is a shrinkage penalty. When <span class="math inline">\(\lambda = 0\)</span>, there is no penalty and ridge regression will return the least squares estimates. As <span class="math inline">\(\lambda \rightarrow \infty\)</span>, the shrinkage penalty grows and the estimates of the <span class="math inline">\(\beta\)</span>’s approach zero. While least squares regression returns one set of estimates for the <span class="math inline">\(\beta\)</span>’s, ridge regression returns a different set of estimates, <span class="math inline">\(\hat{\beta}^R\)</span>, for each value of <span class="math inline">\(\lambda\)</span>. Selecting a good value of <span class="math inline">\(\lambda\)</span> can be accomplished with cross-validation. The final model with ridge regression will include all <span class="math inline">\(p\)</span> predictors. The penalty used by ridge regression is known as an <span class="math inline">\(\ell_2\)</span> norm. Using an <span class="math inline">\(\ell_1\)</span> norm for the shrinkage penalty instead of an <span class="math inline">\(\ell_2\)</span> norm, results in the lasso model <span class="citation" data-cites="tibshirani_regression_1996">(<a href="#ref-tibshirani_regression_1996" role="doc-biblioref">Tibshirani 1996</a>)</span>.</p>
+</section>
+<section id="lasso" class="level3">
+<h3 class="anchored" data-anchor-id="lasso">LASSO</h3>
+<p>The lasso coefficients, <span class="math inline">\(\hat{\beta}^L\)</span>, minimize the quantity</p>
+<p><span id="eq-lassoE"><span class="math display">\[
+\sum_{i=1}^n(y_i-\hat{y}_i)^2 + \lambda\sum_{j=1}^p|\beta_j| = RSS + \lambda\sum_{j=1}^p|\beta_j|
+\tag{5}\]</span></span></p>
+<p>As with ridge regression, lasso returns a set of coefficient estimates, <span class="math inline">\(\hat{\beta}^L\)</span>, for each value of <span class="math inline">\(\lambda\)</span>. Selecting a good value of <span class="math inline">\(\lambda\)</span> (known as tuning) can be accomplished with cross-validation. Unlike the final ridge regression model which includes all <span class="math inline">\(p\)</span> predictors, the lasso model performs variable selection and returns coefficient estimates for only a subset of the original predictors making the final model easier to interpret. Unfortunately, the lasso does not handle correlated variables very well <span class="citation" data-cites="hastie_statistical_2015">(<a href="#ref-hastie_statistical_2015" role="doc-biblioref">Hastie, Tibshirani, and Wainwright 2015</a>)</span>. The elastic net <span class="citation" data-cites="zou_regularization_2005">(<a href="#ref-zou_regularization_2005" role="doc-biblioref">Zou and Hastie 2005</a>)</span> provides a compromise between ridge and lasso penalties.</p>
+</section>
+<section id="elastic-net" class="level3">
+<h3 class="anchored" data-anchor-id="elastic-net">Elastic net</h3>
+<p>The elastic net minimizes the quantity</p>
+<p><span id="eq-enetE"><span class="math display">\[
+\frac{1}{2}\sum_{i=1}^n(y_i-\hat{y}_i)^2 + \lambda\left[\frac{1}{2}(1 - \alpha)||\beta||_2^2 + \alpha||\beta||_1 \right] ,
+\tag{6}\]</span></span></p>
+<p>where <span class="math inline">\(||\beta||_2^2\)</span> is the <span class="math inline">\(\ell_2\)</span> norm of <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\sum_{j=1}^p\beta^2_j\)</span>, and <span class="math inline">\(||\beta||_1\)</span> is the <span class="math inline">\(\ell_1\)</span> norm of <span class="math inline">\(\beta\)</span>, <span class="math inline">\(\sum_{j=1}^p|\beta_j|\)</span>. The penalty applied to an individual coefficient ignoring the value of <span class="math inline">\(\lambda\)</span> is</p>
+<p><span id="eq-penaltyENET"><span class="math display">\[
+\frac{1}{2}(1 - \alpha)\beta_j^2 + \alpha|\beta_j|.
+\tag{7}\]</span></span></p>
+<p>When <span class="math inline">\(\alpha = 1\)</span>, the penalty in <a href="#eq-penaltyENET">Equation&nbsp;7</a> reduces to the lasso penalty, and when <span class="math inline">\(\alpha = 0\)</span>, the penalty in <a href="#eq-penaltyENET">Equation&nbsp;7</a> reduces to the ridge penalty. Selecting good values of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\lambda\)</span> can be accomplished with cross-validation.</p>
+<p>The following <code>R</code> code fits a ridge regression model for <code>medv</code> using the <code>Boston</code> data with the <code>train()</code> function and <code>method = "glmnet"</code>. In the <code>expand.grid()</code> function, use the argument <code>alpha = 0</code> to specify a ridge model. <code>lambda = seq(0.01, 100, length = 100)</code> creates a user defined grid of <code>lambda</code> values used in tuning the ridge regression.</p>
+<div class="callout callout-style-default callout-caution no-icon callout-titled" title="R Code">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit constrained model (elastic net)---Ridge model</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>mod_RidgeB <span class="ot">&lt;-</span> <span class="fu">train</span>(<span class="at">y =</span>trainingTransB<span class="sc">$</span>medv,   <span class="co"># response</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">x =</span> trainingTransB[, <span class="sc">-</span><span class="dv">14</span>],    <span class="co"># predictors</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">trControl =</span> myControlB, </span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">method =</span> <span class="st">"glmnet"</span>,</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">alpha =</span> <span class="dv">0</span>, </span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">lambda =</span> <span class="fu">seq</span>(<span class="fl">0.01</span>, <span class="dv">100</span>, <span class="at">length =</span> <span class="dv">100</span>)))</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mod_RidgeB<span class="sc">$</span>results)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  alpha lambda     RMSE  Rsquared      MAE   RMSESD RsquaredSD     MAESD
+1     0   0.01 4.520299 0.7662803 3.240542 1.061121  0.1018991 0.5715856
+2     0   1.02 4.549192 0.7640606 3.237639 1.090177  0.1054067 0.5729318
+3     0   2.03 4.670858 0.7556412 3.274392 1.152884  0.1144966 0.5801409
+4     0   3.04 4.796116 0.7477187 3.344541 1.181727  0.1201087 0.5831796
+5     0   4.05 4.916809 0.7403484 3.422373 1.196029  0.1239887 0.5863119
+6     0   5.06 5.031277 0.7333883 3.500951 1.203254  0.1268702 0.5908202</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(mod_RidgeB<span class="sc">$</span>results<span class="sc">$</span>RMSE)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4.520299</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>mod_RidgeB<span class="sc">$</span>bestTune</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  alpha lambda
+1     0   0.01</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>mod_RidgeB<span class="sc">$</span>bestTune<span class="sc">$</span>lambda</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.01</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>mod_RidgeB<span class="sc">$</span>bestTune<span class="sc">$</span>alpha</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0</code></pre>
+</div>
+</div>
+</div>
+</div>
+<p><code>mod_Ridge$results</code> displays the <code>RMSE</code> for all the models for each value of the tuning parameter <code>lambda</code> (100 models in this case). <code>mod_RidgeB$bestTune</code> gives the <code>lambda</code> value of the model with the minimum <code>RMSE</code>. In this case, the best <code>lambda</code> value was 0.01 which returned the minimum <code>RMSE</code> of 4.520299.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 18">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 18
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>train()</code> function with <code>method = "glmnet"</code> to fit a constrained linear regression model named <code>mod_Ridge</code>. Assign the object <code>myControl</code> to the <code>trControl</code> argument of the <code>train()</code> function to fit a ridge model where the goal is to predict body fat. Use <code>brozek_C</code> as the response and store the results of <code>train()</code> in <code>mod_Ridge</code>. Use <code>set.seed(42)</code> for reproducibility. Do not include any predictors that are perfectly correlated. Produce a plot of RMSE versus the regularization parameter (<span class="math inline">\(\lambda\)</span>).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 18 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-43-contents" aria-controls="callout-43" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 18 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-43" class="callout-43-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Ridge model</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Code here for plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 19">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 19
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Report the <code>lambda</code> value of the model with the minimum <code>RMSE</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 19 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-45-contents" aria-controls="callout-45" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 19 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-45" class="callout-45-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 20">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 20
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>train()</code> function with <code>method = "glmnet"</code> and assign the object <code>myControl</code> to the <code>trControl</code> argument of the <code>train()</code> function to fit a lasso model where the goal is to predict body fat. Use <code>brozek_C</code> as the response and store the results of <code>train()</code> in <code>mod_lasso</code>. In the <code>expand.grid()</code> function set the argument <code>alpha = 1</code> in order to obtain a lasso model. Use <code>set.seed(42)</code> for reproducibility. Do not include any predictors that are perfectly correlated. Produce a plot of RMSE versus the regularization parameter (<span class="math inline">\(\lambda\)</span>).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 20 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-47-contents" aria-controls="callout-47" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 20 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-47" class="callout-47-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Lasso model: alpha = 1</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 21">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 21
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Report the <code>lambda</code> value of the model with the minimum <code>RMSE</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 21 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-49-contents" aria-controls="callout-49" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 21 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-49" class="callout-49-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 22">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 22
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use the <code>train()</code> function with <code>method = "glmnet"</code> and assign the object <code>myControl</code> to the <code>trControl</code> argument of the <code>train()</code> fucntion where the goal is to predict body fat using an elastic net model. Use <code>brozek_C</code> as the response and store the results of <code>train()</code> in <code>mod_EN</code>. Use <code>set.seed(42)</code> for reproducibility. Do not include any predictors that are perfectly correlated. Use a custom tuning grid with arguments to <code>expand.grid()</code> of <code>alpha = seq(0.1, 0.5, length = 11)</code> and <code>lambda = seq(0.01, 100, length = 20)</code>. Produce a plot of RMSE versus the regularization parameter (<span class="math inline">\(\lambda\)</span>).</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 22 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-51-contents" aria-controls="callout-51" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 22 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-51" class="callout-51-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Elastic net model</span></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled" title="Problem 23">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 23
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Report the <code>lambda</code> and <code>alpha</code> values of the model with the minimum <code>RMSE</code>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled" title="Problem 23 Answers">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-53-contents" aria-controls="callout-53" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Problem 23 Answers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-53" class="callout-53-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Type your code and comments inside the code chunk</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p>Type your complete sentence answer here using inline R code and delete this comment.</p>
+<hr>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip no-icon callout-titled" title="License">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+License
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This material is released under an <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/us/">Attribution-NonCommercial-ShareAlike 3.0 United States</a> license. Original author: <a href="https://alanarnholt.github.io/">Alan T. Arnholt</a></p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="references" class="level2 unnumbered">
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-R-mfp" class="csl-entry" role="listitem">
+Ambler, Gareth, and Axel Benner. 2022. <em>Mfp: Multivariable Fractional Polynomials</em>. <a href="https://CRAN.R-project.org/package=mfp">https://CRAN.R-project.org/package=mfp</a>.
+</div>
+<div id="ref-hastie_elements_2009" class="csl-entry" role="listitem">
+Hastie, Trevor, Robert Tibshirani, and Jerome Friedman. 2009. <em>The <span>Elements</span> of <span>Statistical</span> <span>Learning</span>: <span>Data</span> <span>Mining</span>, <span>Inference</span>, and <span>Prediction</span>, <span>Second</span> <span>Edition</span></em>. 2 edition. Springer.
+</div>
+<div id="ref-hastie_statistical_2015" class="csl-entry" role="listitem">
+Hastie, Trevor, Robert Tibshirani, and Martin Wainwright. 2015. <em>Statistical <span>Learning</span> with <span>Sparsity</span>: <span>The</span> <span>Lasso</span> and <span>Generalizations</span></em>. 1 edition. Boca Raton: Chapman; Hall/CRC.
+</div>
+<div id="ref-hoerl_ridge_1970" class="csl-entry" role="listitem">
+Hoerl, Arthur E., and Robert W. Kennard. 1970. <span>“Ridge <span>Regression</span>: <span>Biased</span> <span>Estimation</span> for <span>Nonorthogonal</span> <span>Problems</span>.”</span> <em>Technometrics</em> 12 (1): 55–67. <a href="https://doi.org/10.2307/1267351">https://doi.org/10.2307/1267351</a>.
+</div>
+<div id="ref-johnson_fitting_1996" class="csl-entry" role="listitem">
+Johnson, Roger W. 1996. <span>“Fitting <span>Percentage</span> of <span>Body</span> <span>Fat</span> to <span>Simple</span> <span>Body</span> <span>Measurements</span>.”</span> <em>Journal of Statistics Education</em> 4 (1). <a href="https://doi.org/10.1080/10691898.1996.11910505">https://doi.org/10.1080/10691898.1996.11910505</a>.
+</div>
+<div id="ref-matloff_statistical_2017" class="csl-entry" role="listitem">
+Matloff, Norman. 2017. <em>Statistical <span>Regression</span> and <span>Classification</span>: <span>From</span> <span>Linear</span> <span>Models</span> to <span>Machine</span> <span>Learning</span></em>. 1 edition. Boca Raton: Chapman; Hall/CRC.
+</div>
+<div id="ref-R-MASS" class="csl-entry" role="listitem">
+Ripley, Brian. 2023. <em>MASS: Support Functions and Datasets for Venables and Ripley’s MASS</em>. <a href="http://www.stats.ox.ac.uk/pub/MASS4/">http://www.stats.ox.ac.uk/pub/MASS4/</a>.
+</div>
+<div id="ref-tibshirani_regression_1996" class="csl-entry" role="listitem">
+Tibshirani, Robert. 1996. <span>“Regression <span>Shrinkage</span> and <span>Selection</span> via the <span>Lasso</span>.”</span> <em>Journal of the Royal Statistical Society. Series B (Methodological)</em> 58 (1): 267–88. <a href="http://www.jstor.org/stable/2346178">http://www.jstor.org/stable/2346178</a>.
+</div>
+<div id="ref-R-corrplot" class="csl-entry" role="listitem">
+Wei, Taiyun, and Viliam Simko. 2021. <em>Corrplot: Visualization of a Correlation Matrix</em>. <a href="https://github.com/taiyun/corrplot">https://github.com/taiyun/corrplot</a>.
+</div>
+<div id="ref-R-dplyr" class="csl-entry" role="listitem">
+Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis Vaughan. 2023. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://CRAN.R-project.org/package=dplyr">https://CRAN.R-project.org/package=dplyr</a>.
+</div>
+<div id="ref-zou_regularization_2005" class="csl-entry" role="listitem">
+Zou, Hui, and Trevor Hastie. 2005. <span>“Regularization and Variable Selection via the Elastic Net.”</span> <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 67 (2): 301–20. <a href="https://doi.org/10.1111/j.1467-9868.2005.00503.x">https://doi.org/10.1111/j.1467-9868.2005.00503.x</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
